@@ -17,14 +17,10 @@ public class SQLUtil {
 
 	private static Connection connect = null;
 	
-	private static boolean name, user, pass;
 	private static Plugin plugin;
-	
-	private static String sqlPort = "3306";
-	private static String sqlAddress = "localhost";
-	private static String sqlName = "";
-	private static String sqlUser = "";
-	private static String sqlPass = "";
+	private static DatabaseType type = DatabaseType.SQLite;
+	private static String sqlUser = null;
+	private static String sqlPass = null;
 	
 	/** 
 	 * Get the SQL connection using the credentials already
@@ -34,10 +30,6 @@ public class SQLUtil {
 	 * @throws SQLException 
 	 */
 	private synchronized static Connection getConnection() throws SQLException {
-		
-		if(!name || !user || !pass) {
-			throw new SQLException("Username, password or database name is missing!");
-		}
 		
 		if(plugin == null) {
 			throw new SQLException("You need an instance of the plugin to use SQLUtil!");
@@ -51,7 +43,7 @@ public class SQLUtil {
 		}
 		
 		if(connect == null) {
-			connect = DriverManager.getConnection("jdbc:mysql://" + sqlAddress + ":" + sqlPort + "/" + sqlName, sqlUser, sqlPass);
+			connect = DriverManager.getConnection(type.address(), sqlUser, sqlPass);
 		}
 		
 		if(connect == null) {
@@ -72,15 +64,29 @@ public class SQLUtil {
 	}
 	
 	/**
+	 * Set the type of database to either SQLite or MySQL.
+	 * Note that the default setting is SQLite.
+	 * 
+	 * @param type The type of database to set to.
+	 */
+	public static void setType(DatabaseType type) {
+		SQLUtil.type = type;
+	}
+	
+	/**
 	 * Set any of the attributes required to connect
 	 * to an SQL database. Options for the name are:
 	 * <ul>
 	 * <li><b>port</b> - The port to the SQL server <i>default 3306</i>.
 	 * <li><b>address</b> - The address to the SQL server <i>default localhost</i>.
 	 * <li><b>name</b> - The name of the SQL database <i>required</i>.
-	 * <li><b>username</b> - The username to access the SQL database <i>required</i>.
-	 * <li><b>password</b> - The password to access the SQL database <i>required</i>.
+	 * <li><b>username</b> - The username to access the SQL database <i>required for MySQL</i>.
+	 * <li><b>password</b> - The password to access the SQL database <i>required for MySQL</i>.
 	 * </ul>
+	 * Note that with SQLite only the database name is required
+	 * as it is the name of the file. MySQL can be used by changing
+	 * the setting using {@link SQLUtil#setType(DatabaseType)};
+	 * <p>
 	 * 
 	 * @param name The name of the attribute listed above.
 	 * @param value The value to input into the attribute.
@@ -88,18 +94,15 @@ public class SQLUtil {
 	public static void setAttribute(String name, String value) {
 		
 		switch(name) {
-		case "port": sqlPort = value;
+		case "port": type.port = value;
 		break;
-		case "address": sqlAddress = value;
+		case "address": type.address = value;
 		break;
-		case "name": sqlName = value;
-		SQLUtil.name = true;
+		case "name": type.name = value;
 		break;
 		case "username": sqlUser = value;
-		SQLUtil.user = true;
 		break;
 		case "password": sqlPass = value;
-		SQLUtil.pass = true;
 		}
 	}
 	
@@ -332,6 +335,30 @@ public class SQLUtil {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public enum DatabaseType {
+		
+		SQLite(false, "jdbc:sqlite:"),
+		MySQL(true, "jdbc:mysql://address:port/name");
+
+		private boolean rPort;
+		private String prefix, address, port, name;
+		private DatabaseType(boolean rPort, String prefix) {
+			this.rPort = rPort;
+			this.prefix = prefix;
+		}
+		
+		/**
+		 * Constructs a JDBC SQL address and returns 
+		 * it for use in getting an SQL connection.
+		 * 
+		 * @return An SQL address.
+		 */
+		private String address() {
+			return rPort ? prefix + address + ':' + 
+					port + '/' + name : prefix + name;
 		}
 	}
 }

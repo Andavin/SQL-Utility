@@ -261,7 +261,7 @@ public class SQLUtil {
 	 * set into the statement as a string.
 	 * <p>
 	 * <b>Important</b>: The columnNames should be the same length as the args. 
-	 * If this amount is different if would be bad!
+	 * If this amount is different it would be bad!
 	 * <br>
 	 * Arguments will be inserted in the order they come in.
 	 * <br>
@@ -269,18 +269,17 @@ public class SQLUtil {
 	 * 	INSERT INTO tableName(`columnName1`, `columName2`, `etc.`) VALUES(arg1, args2, etc.)</pre>
 	 * This method then will return the ResultSet used to check it 
 	 * with the cursor already at the first position.
-	 * If this is not wished to be used the use parameter must be set
+	 * If this is not wished to be used the <b>use</b> parameter must be set
 	 * to false and the ResultSet and PreparedStatement will be closed.
-	 * If the use parameter is true then neither object will be closed
-	 * and to avoid memory leaks the ResultSet <b>must</b> be closed
+	 * If the <b>use</b> parameter is true then neither object will be closed
+	 * so to avoid memory leaks the ResultSet <b>must</b> be closed
 	 * using the {@link ResultSet#getStatement()} and from there the
 	 * {@link PreparedStatement#close()} method. Null will be returned
 	 * if the table did not exist and was placed or an exception was
 	 * thrown during the process.
 	 * <p>
 	 * 
-	 * @param use Whether it is wished to use the ResultSet returned.<br>
-	 * If set to false the ResultSet will be initially closed before being returned.
+	 * @param use Whether it is wished to use the ResultSet returned.
 	 * @param tableName The name of the SQL table to insert into.
 	 * @param select The select part of this statement (e.g. 'SELECT * FROM tableName')
 	 * @param where The where statement (e.g. 'WHERE `yourWhere` = yourValue')
